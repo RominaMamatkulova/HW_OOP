@@ -30,13 +30,14 @@ def calculate_grades_lector(list_lector, course):
     return av_grade
 
 class Student:
-    def __init__(self, name, surname, gender):
+    def __init__(self, name, surname, gender, grade_stud=0):
         self.name = name
         self.surname = surname
         self.gender = gender
         self.finished_courses = []
         self.courses_in_progress = []
         self.grades = {}
+        self.grade_stud = 0
     #метод выставления оценок лекторам
     def rate_lector(self, lector, course, grade):
         if isinstance(lector, Lecturer) and course in self.courses_in_progress and course in lector.courses_attached:
@@ -46,20 +47,28 @@ class Student:
                 lector.grades[course] = [grade]
         else:
             return 'Ошибка'
+    def calc_grade(self):
+        count = 0
+        sum_grade = 0
+        av_grade = 0
+        #st_course = ""
+        for course in self.courses_in_progress:
+            #st_course = f'{st_course}{course},'
+            for key, grade in self.grades.items():
+                if course in key:
+                    sum_grade += sum(grade)
+                    count += len(grade)
+        av_grade = sum_grade / count
+        self.grade_stud = av_grade
+        return av_grade
     def __str__(self):
-        count=0
-        sum_grade=0
-        av_grade=0
         st_course = ""
         for course in self.courses_in_progress:
-            st_course=f'{st_course}{course},'
-            for key,grade in self.grades.items():
-                if course in key:
-                    sum_grade+=sum(grade)
-                    count+=len(grade)
-        av_grade=sum_grade/count
-        res = f'Имя: {self.name} \nФамилия: {self.surname} \nСредняя оценка за домашние задания: {av_grade} \nКурсы в процессе изучения: {st_course} \nЗавершенные курсы: Введение в программирование'
+            st_course = f'{st_course}{course},'
+        res = f'Имя: {self.name} \nФамилия: {self.surname} \nСредняя оценка за домашние задания: {self.calc_grade()} \nКурсы в процессе изучения: {st_course} \nЗавершенные курсы: Введение в программирование'
         return res
+    def __lt__(self, other):
+        return self.grade_stud < other.grade_stud
 
 class Mentor:
     def __init__(self, name, surname):
@@ -68,23 +77,30 @@ class Mentor:
         self.courses_attached = []
 
 class Lecturer(Mentor):
-    def __init__(self, name, surname):
+    def __init__(self, name, surname, grade_lect=0):
         self.name = name
         self.surname = surname
         self.courses_attached = []
         self.grades = {}
-    def __str__(self):
-        count=0
-        sum_grade=0
-        av_grade=0
+        self.grade_lect = grade_lect
+    def calc_grade(self):
+        count = 0
+        sum_grade = 0
+        av_grade = 0
         for course in self.courses_attached:
-            for key,grade in self.grades.items():
+            for key, grade in self.grades.items():
                 if course in key:
-                    sum_grade+=sum(grade)
-                    count+=len(grade)
-        av_grade=sum_grade/count
-        res = f'Имя: {self.name} \nФамилия: {self.surname} \nСредняя оценка за лекции: {av_grade}'
+                    sum_grade += sum(grade)
+                    count += len(grade)
+        av_grade = sum_grade / count
+        self.grade_lect=av_grade
+        return av_grade
+    def __str__(self):
+        res = f'Имя: {self.name} \nФамилия: {self.surname} \nСредняя оценка за лекции: {self.calc_grade()}'
         return res
+    def __lt__(self, other):
+        return self.grade_lect < other.grade_lect
+
 
 class Reviewer(Mentor):
     def rate_hw(self, student, course, grade):
@@ -116,6 +132,8 @@ good_lectorer = Lecturer('Maksim', 'Chan')
 good_lectorer.courses_attached += ['PHP']
 good_lectorer.courses_attached += ['Java']
 good_lectorer.courses_attached += ['Python']
+
+
 
 #введем студентов
 some_student = Student('Ruoy', 'Eman', 'your_gender')
@@ -152,3 +170,6 @@ students_list = [good_student, some_student]
 print(calculate_grades_student(students_list,'Python'))
 lector_list = [good_lectorer, some_lectorer]
 print(calculate_grades_lector(lector_list,'PHP'))
+#print(good_lectorer.calc_grade())
+print(good_lectorer < some_lectorer)
+print(some_student < good_student)
